@@ -1,0 +1,17 @@
+apiVersion: nodeops.k8s.preferred.jp/v1alpha1
+kind: NodeOperation
+metadata:
+  name: tutorial2
+spec:
+  nodeName: "nodeops-tutorial-worker"
+  jobTemplate:
+    metadata:
+      namespace: default
+    spec:
+      template:
+        spec:
+          containers:
+            - name: operation
+              image: busybox
+              command: ["sh", "-c", "sleep 60 && echo done"]
+          restartPolicy: Never

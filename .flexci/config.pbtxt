@@ -1,0 +1,12 @@
+configs {
+  key: "k8s-node-operation-controller"
+  value {
+    requirement {
+      cpu: 4
+      memory: 8
+      image: "imosci"
+      disk: 50
+    }
+    command: ".flexci/run.sh"
+  }
+}

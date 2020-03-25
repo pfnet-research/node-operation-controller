@@ -1,0 +1,85 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  name: nodedisruptionbudgets.nodeops.k8s.preferred.jp
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.maxUnavailable
+    name: MaxUnavailable
+    type: integer
+  - JSONPath: .spec.minAvailable
+    name: MinAvailable
+    type: integer
+  group: nodeops.k8s.preferred.jp
+  names:
+    kind: NodeDisruptionBudget
+    plural: nodedisruptionbudgets
+  scope: Cluster
+  subresources: {}
+  validation:
+    openAPIV3Schema:
+      description: NodeDisruptionBudget is the Schema for the nodedisruptionbudgets
+        API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: NodeDisruptionBudgetSpec defines the desired state of NodeDisruptionBudget
+          properties:
+            maxUnavailable:
+              format: int64
+              type: integer
+            minAvailable:
+              format: int64
+              type: integer
+            selector:
+              additionalProperties:
+                type: string
+              type: object
+            taintTargets:
+              description: TaintTargets defines taints by which nodes are determined
+                as unavailable. Default taints added by this controller are implicitly
+                added to TaintTargets.
+              items:
+                properties:
+                  effect:
+                    type: string
+                  key:
+                    type: string
+                  operator:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              type: array
+          required:
+          - selector
+          type: object
+        status:
+          description: NodeDisruptionBudgetStatus defines the observed state of NodeDisruptionBudget
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
