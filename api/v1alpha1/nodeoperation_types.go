@@ -59,7 +59,7 @@ type NodeOperationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	NodeName                         string `json:"nodeName"`
+	NodeName                  string `json:"nodeName"`
 	NodeOperationSpecTemplate `json:",inline"`
 }
 

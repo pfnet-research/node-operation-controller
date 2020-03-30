@@ -48,9 +48,9 @@ const eventSourceName = "node-operation-controller"
 // NodeOperationReconciler reconciles a NodeOperation object
 type NodeOperationReconciler struct {
 	client.Client
-	Log           logr.Logger
-	Scheme        *runtime.Scheme
-	DrainInterval time.Duration
+	Log              logr.Logger
+	Scheme           *runtime.Scheme
+	DrainInterval    time.Duration
 	NDBRetryInterval time.Duration
 
 	clientset                 *kubernetes.Clientset
