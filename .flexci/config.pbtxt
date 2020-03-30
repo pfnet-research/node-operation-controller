@@ -1,5 +1,5 @@
 configs {
-  key: "k8s-node-operation-controller"
+  key: "node-operation-controller"
   value {
     requirement {
       cpu: 4
