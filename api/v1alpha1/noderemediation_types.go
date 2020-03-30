@@ -52,6 +52,8 @@ type NodeRemediationStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitEmpty"`
+	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
+	OperationsCount int64 `json:"operationsCount"`
 }
 
 // +kubebuilder:object:root=true
