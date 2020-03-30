@@ -12,24 +12,26 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+export KUBECONFIG=/tmp/node-operation-controller-test.kubeconfig.yaml
+
 all: manager
 
 # Run tests
 test: generate fmt vet manifests kind-for-test
-	KUBECONFIG=$(shell kind get kubeconfig-path --name=node-operation-controller-test) go test ./... -coverprofile cover.out -v
+	go test ./... -coverprofile cover.out -v
 
 test-focus: generate fmt vet manifests kind-for-test
-	KUBECONFIG=$(shell kind get kubeconfig-path --name=node-operation-controller-test) ginkgo -focus "${FOCUS}" ./...
+	ginkgo -focus "${FOCUS}" ./...
 
 kind-for-test:
 	(kind get clusters | grep -q node-operation-controller-test && kind delete cluster --name=node-operation-controller-test) || true
-	kind create cluster --name=node-operation-controller-test --config=config/kind/test.yaml
-	KUBECONFIG=$(shell kind get kubeconfig-path --name=node-operation-controller-test) kubectl delete deploy -n kube-system coredns
+	kind create cluster --name=node-operation-controller-test --config=config/kind/test.yaml --kubeconfig=$(KUBECONFIG)
+	kubectl delete deploy -n kube-system coredns
 
 prepare-ci:
 	curl -o /tmp/go.tar.gz https://dl.google.com/go/go1.13.linux-amd64.tar.gz
 	tar -C /usr/local -xzf /tmp/go.tar.gz
-	curl -Lo /tmp/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(shell uname)-amd64
+	curl -Lo /tmp/kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(shell uname)-amd64
 	chmod +x /tmp/kind
 	mv /tmp/kind /usr/local/bin/kind
 	curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.17.4/bin/linux/amd64/kubectl
