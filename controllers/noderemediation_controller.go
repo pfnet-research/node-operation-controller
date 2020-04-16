@@ -118,7 +118,7 @@ func (r *NodeRemediationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 
 	// Avoid to create too many NodeOperations
 	if 0 < remediation.Status.OperationsCount {
-		// TODO: backoff feature
+		// TODO: backoff feature.  We can calculate the next backoff-ed trial timestamp from the counter value and the latest child NodeOperation completion timestamp
 		r.eventRecorder.Eventf(&remediation, corev1.EventTypeNormal, "NodeIsNotRemediated", `Though a NodeOperation has finished, the Node is not remediated. Skipping to create a NodeOperation.`)
 		return ctrl.Result{}, nil
 	}
