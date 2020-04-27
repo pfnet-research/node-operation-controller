@@ -728,5 +728,20 @@ var _ = Describe("NodeRemediation", func() {
 
 			return false
 		}, eventuallyTimeout).Should(BeTrue())
+
+		Eventually(func() bool {
+			events := &corev1.EventList{}
+			Expect(k8sClient.List(ctx, events)).NotTo(HaveOccurred())
+
+			for _, event := range events.Items {
+				if event.InvolvedObject.GroupVersionKind().String() == "nodeops.k8s.preferred.jp/v1alpha1, Kind=NodeRemediation" &&
+					event.InvolvedObject.Name == remediation.Name &&
+					event.Type == corev1.EventTypeNormal &&
+					event.Reason == "NodeIsNotRemediated" {
+					return true
+				}
+			}
+			return false
+		}, eventuallyTimeout).Should(BeTrue())
 	})
 })
