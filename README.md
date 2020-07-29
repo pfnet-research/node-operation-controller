@@ -55,7 +55,7 @@ Node operation controller automates these steps. In addition, this controller:
 
 ### NodeRemediation
 
-For most operation team, they would have their own secret-souce for daily operation. This means typical node failure can be cured by common recipe shared among the team. `NodeRemediation`, `NodeRemediationTemplate` and `NodeOperationTemplate` enable us to automate the common operation for known node issues.  
+For most operation team, they would have their own secret-sauce for daily operation. This means typical node failure can be cured by common recipe shared among the team. `NodeRemediation`, `NodeRemediationTemplate` and `NodeOperationTemplate` enable us to automate the common operation for known node issues.
 
 - `NodeOperationTemplate` represents a template of common node operation.
 - `NodeRemediation` defines 
