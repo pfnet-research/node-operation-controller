@@ -366,7 +366,9 @@ func (r *NodeOperationReconciler) reconcileRunning(ctx context.Context, nodeOp *
 		return ctrl.Result{}, err
 	}
 	// After untainting, other NodeOperations for the node can proceed from Pending phase.
-	r.untaintNode(node)
+	if err := r.untaintNode(node); err != nil {
+		return ctrl.Result{Requeue: true}, nil
+	}
 	r.eventRecorder.Eventf(nodeOp, "Normal", "UntaintNode", `Untainted a Node "%s"`, node.Name)
 
 	// update after untaint
