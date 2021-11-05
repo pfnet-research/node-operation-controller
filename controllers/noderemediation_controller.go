@@ -221,6 +221,7 @@ func (r *NodeRemediationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodeopsv1alpha1.NodeRemediation{}).
+		Owns(&nodeopsv1alpha1.NodeOperation{}).
 		Watches(&source.Kind{Type: &corev1.Node{}}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
 		Complete(r)
 }

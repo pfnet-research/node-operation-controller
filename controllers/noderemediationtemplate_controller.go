@@ -204,6 +204,7 @@ func (r *NodeRemediationTemplateReconciler) SetupWithManager(mgr ctrl.Manager) e
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodeopsv1alpha1.NodeRemediationTemplate{}).
+		Owns(&nodeopsv1alpha1.NodeRemediation{}).
 		Watches(&source.Kind{Type: &corev1.Node{}}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
 		Complete(r)
 }
