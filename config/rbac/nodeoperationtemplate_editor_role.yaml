@@ -1,0 +1,24 @@
+# permissions for end users to edit nodeoperationtemplates.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nodeoperationtemplate-editor-role
+rules:
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperationtemplates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperationtemplates/status
+  verbs:
+  - get

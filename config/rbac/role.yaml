@@ -135,3 +135,81 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperationtemplates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperationtemplates/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperationtemplates/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediations/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediationtemplates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediationtemplates/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediationtemplates/status
+  verbs:
+  - get
+  - patch
+  - update

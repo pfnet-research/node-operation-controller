@@ -1,0 +1,24 @@
+# permissions for end users to edit noderemediations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: noderemediation-editor-role
+rules:
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - noderemediations/status
+  verbs:
+  - get

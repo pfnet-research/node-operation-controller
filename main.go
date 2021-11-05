@@ -95,6 +95,27 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "NodeDisruptionBudget")
 		os.Exit(1)
 	}
+	if err = (&controllers.NodeOperationTemplateReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "NodeOperationTemplate")
+		os.Exit(1)
+	}
+	if err = (&controllers.NodeRemediationTemplateReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "NodeRemediationTemplate")
+		os.Exit(1)
+	}
+	if err = (&controllers.NodeRemediationReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "NodeRemediation")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

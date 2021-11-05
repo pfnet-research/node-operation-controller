@@ -1,0 +1,6 @@
+apiVersion: nodeops.k8s.preferred.jp/v1alpha1
+kind: NodeRemediation
+metadata:
+  name: noderemediation-sample
+spec:
+  # TODO(user): Add fields here
