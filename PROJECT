@@ -1,0 +1,6 @@
+domain: k8s.preferred.jp
+layout:
+- go.kubebuilder.io/v3
+projectName: kubebuilder-v3
+repo: github.com/pfnet-research/node-operation-controller
+version: "3"
