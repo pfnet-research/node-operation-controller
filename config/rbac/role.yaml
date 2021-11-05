@@ -1,0 +1,137 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/eviction
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - get
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs/status
+  verbs:
+  - get
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodedisruptionbudgets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodedisruptionbudgets/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodedisruptionbudgets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperations
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperations/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperations/status
+  verbs:
+  - get
+  - patch
+  - update

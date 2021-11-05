@@ -1,0 +1,24 @@
+# permissions for end users to edit nodedisruptionbudgets.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nodedisruptionbudget-editor-role
+rules:
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodedisruptionbudgets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodedisruptionbudgets/status
+  verbs:
+  - get

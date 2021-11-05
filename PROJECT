@@ -3,4 +3,23 @@ layout:
 - go.kubebuilder.io/v3
 projectName: kubebuilder-v3
 repo: github.com/pfnet-research/node-operation-controller
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.preferred.jp
+  group: nodeops
+  kind: NodeOperation
+  path: github.com/pfnet-research/node-operation-controller/api/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.preferred.jp
+  group: nodeops
+  kind: NodeDisruptionBudget
+  path: github.com/pfnet-research/node-operation-controller/api/v1alpha1
+  version: v1alpha1
 version: "3"

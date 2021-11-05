@@ -1,0 +1,17 @@
+apiVersion: nodeops.k8s.preferred.jp/v1alpha1
+kind: NodeOperation
+metadata:
+  name: nodeoperation-sample
+spec:
+  nodeName: node-operation-controller-worker
+  jobTemplate:
+    metadata:
+      namespace: default
+    spec:
+      template:
+        spec:
+          containers:
+          - name: pi
+            image: perl
+            command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+          restartPolicy: Never

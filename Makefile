@@ -4,6 +4,8 @@ IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.21
 
+export KUBECONFIG=/tmp/node-operation-controller-test.kubeconfig.yaml
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -41,7 +43,7 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:generateEmbeddedObjectMeta=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -56,8 +58,17 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
+test: manifests generate fmt vet envtest kind-for-test ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+
+test-focus: generate fmt vet manifests kind-for-test
+	ginkgo -focus "${FOCUS}" ./...
+
+kind-for-test:
+	(kind get clusters | grep -q node-operation-controller-test && kind delete cluster --name=node-operation-controller-test) || true
+	kind create cluster --name=node-operation-controller-test --config=config/kind/test.yaml --kubeconfig=$(KUBECONFIG)
+	kubectl delete deploy -n kube-system coredns
+	kubectl delete deploy -n local-path-storage local-path-provisioner
 
 ##@ Build
 
