@@ -1,7 +1,0 @@
-apiVersion: nodeops.k8s.preferred.jp/v1alpha1
-kind: NodeDisruptionBudget
-metadata:
-  name: tutorial1
-spec:
-  selector: {}
-  maxUnavailable: 1
