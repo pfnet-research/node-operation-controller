@@ -19,6 +19,6 @@ make test
 EXITCODE="$?"
 set -e
 
-kubectl --kubeconfig /tmp/node-operation-controller-test.kubeconfig.yaml get all --all-namespaces
+kubectl --kubeconfig ./tmp/node-operation-controller-test.kubeconfig.yaml get all --all-namespaces
 
 exit "$EXITCODE"
