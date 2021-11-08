@@ -1,18 +1,21 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
+	"os"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
-	"os"
-	"strings"
 )
 
 func main() {
+	ctx := context.Background()
 	nodename := flag.String("nodename", "", "")
 	addConditionsFlag := flag.String("add-conditions", "[]", "")
 	removeConditionsFlag := flag.String("remove-condition-types", "", "comma separated")
@@ -30,7 +33,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	node, err := clientset.CoreV1().Nodes().Get(*nodename, metav1.GetOptions{})
+	node, err := clientset.CoreV1().Nodes().Get(ctx, *nodename, metav1.GetOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -43,7 +46,7 @@ func main() {
 	node.Status.Conditions = append(node.Status.Conditions, addConditions...)
 	node.Status.Conditions = removeConditions(node.Status.Conditions, strings.Split(*removeConditionsFlag, ","))
 
-	if _, err := clientset.CoreV1().Nodes().UpdateStatus(node); err != nil {
+	if _, err := clientset.CoreV1().Nodes().UpdateStatus(ctx, node, metav1.UpdateOptions{}); err != nil {
 		panic(err.Error())
 	}
 }

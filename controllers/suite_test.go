@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,33 +19,32 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 
 	"k8s.io/apimachinery/pkg/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	nodeopsv1alpha1 "github.com/pfnet-research/node-operation-controller/api/v1alpha1"
-	// +kubebuilder:scaffold:imports
+	//+kubebuilder:scaffold:imports
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -59,76 +59,59 @@ func TestAPIs(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t,
 		"Controller Suite",
-		[]Reporter{envtest.NewlineReporter{}})
+		[]Reporter{printer.NewlineReporter{}})
 }
 
-var _ = BeforeSuite(func(done Done) {
-	logf.SetLogger(zap.LoggerTo(GinkgoWriter, true))
+var _ = BeforeSuite(func() {
+	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
 	trueV := true
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:  []string{filepath.Join("..", "config", "crd", "bases")},
-		UseExistingCluster: &trueV,
+		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
+		ErrorIfCRDPathMissing: true,
+		UseExistingCluster:    &trueV,
 	}
 
 	var err error
 	cfg, err = testEnv.Start()
-	Expect(err).ToNot(HaveOccurred())
-	Expect(cfg).ToNot(BeNil())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(cfg).NotTo(BeNil())
 
 	err = nodeopsv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = nodeopsv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = nodeopsv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = nodeopsv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = nodeopsv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = nodeopsv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	// +kubebuilder:scaffold:scheme
+	//+kubebuilder:scaffold:scheme
 
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
-	Expect(err).ToNot(HaveOccurred())
-	Expect(k8sClient).ToNot(BeNil())
+	Expect(err).NotTo(HaveOccurred())
+	Expect(k8sClient).NotTo(BeNil())
 
 	mgr, err := manager.New(cfg, manager.Options{})
+	Expect(err).NotTo(HaveOccurred())
 
 	err = (&NodeOperationReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("NodeOperation"),
 		Scheme: scheme.Scheme,
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&NodeRemediationReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("NodeRemediation"),
 		Scheme: scheme.Scheme,
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&NodeRemediationTemplateReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("NodeRemediationTemplate"),
 		Scheme: scheme.Scheme,
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
-	stop := make(chan struct{})
 	go func() {
-		err = mgr.Start(stop)
-		Expect(err).ToNot(HaveOccurred())
+		err = mgr.Start(context.Background())
 	}()
+	Expect(err).ToNot(HaveOccurred())
 
 	Eventually(func() bool {
 		nodeList := &corev1.NodeList{}
@@ -142,36 +125,13 @@ var _ = BeforeSuite(func(done Done) {
 		}
 		return true
 	}, time.Minute).Should(BeTrue())
-
-	close(done)
 }, 60)
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 	err := testEnv.Stop()
-	Expect(err).ToNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 })
-
-func SetupTestReconcile(inner reconcile.Reconciler) (reconcile.Reconciler, chan reconcile.Request) {
-	requests := make(chan reconcile.Request)
-	fn := reconcile.Func(func(req reconcile.Request) (reconcile.Result, error) {
-		result, err := inner.Reconcile(req)
-		requests <- req
-		return result, err
-	})
-	return fn, requests
-}
-
-func StartTestManager(mgr manager.Manager, g *GomegaWithT) (chan struct{}, *sync.WaitGroup) {
-	stop := make(chan struct{})
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		g.Expect(mgr.Start(stop)).NotTo(HaveOccurred())
-	}()
-	return stop, wg
-}
 
 func createTestNodeOperation(name string, nodeName string) *nodeopsv1alpha1.NodeOperation {
 	return &nodeopsv1alpha1.NodeOperation{
@@ -272,7 +232,7 @@ var nodeNames = []string{
 	"node-operation-controller-test-worker",
 }
 
-var eventuallyTimeout = time.Second * 20
+var eventuallyTimeout = time.Second * 60
 
 var _ = BeforeEach(func() {
 	cleanupTestResources()
@@ -314,8 +274,7 @@ var _ = Describe("NodeOperation", func() {
 				}
 				Expect(k8sClient.Create(ctx, podToBeEvicted)).NotTo(HaveOccurred())
 				Eventually(func() corev1.PodPhase {
-					key, err := client.ObjectKeyFromObject(podToBeEvicted)
-					Expect(err).To(BeNil())
+					key := client.ObjectKeyFromObject(podToBeEvicted)
 					Expect(k8sClient.Get(ctx, key, podToBeEvicted)).NotTo(HaveOccurred())
 
 					return podToBeEvicted.Status.Phase
@@ -369,7 +328,7 @@ var _ = Describe("NodeOperation", func() {
 			}, eventuallyTimeout).Should(BeTrue())
 
 			Eventually(func() nodeopsv1alpha1.NodeOperationPhase {
-				key, _ := client.ObjectKeyFromObject(op)
+				key := client.ObjectKeyFromObject(op)
 				k8sClient.Get(ctx, key, op)
 				return op.Status.Phase
 			}, eventuallyTimeout).Should(Equal(nodeopsv1alpha1.NodeOperationPhaseCompleted))
@@ -461,8 +420,8 @@ var _ = Describe("NodeOperation", func() {
 		Expect(k8sClient.Create(ctx, op2)).NotTo(HaveOccurred())
 
 		Eventually(func() []nodeopsv1alpha1.NodeOperationPhase {
-			key1, _ := client.ObjectKeyFromObject(op1)
-			key2, _ := client.ObjectKeyFromObject(op2)
+			key1 := client.ObjectKeyFromObject(op1)
+			key2 := client.ObjectKeyFromObject(op2)
 
 			k8sClient.Get(ctx, key1, op1)
 			k8sClient.Get(ctx, key2, op2)
@@ -483,7 +442,7 @@ var _ = Describe("NodeOperation", func() {
 			Expect(k8sClient.Create(ctx, op)).NotTo(HaveOccurred())
 
 			Eventually(func() nodeopsv1alpha1.NodeOperationPhase {
-				key, _ := client.ObjectKeyFromObject(op)
+				key := client.ObjectKeyFromObject(op)
 				k8sClient.Get(ctx, key, op)
 				return op.Status.Phase
 			}, eventuallyTimeout).Should(Equal(nodeopsv1alpha1.NodeOperationPhaseRunning))
@@ -528,8 +487,8 @@ var _ = Describe("NodeOperation", func() {
 				Expect(k8sClient.Create(ctx, op2)).NotTo(HaveOccurred())
 
 				Eventually(func() []nodeopsv1alpha1.NodeOperationPhase {
-					key1, _ := client.ObjectKeyFromObject(op1)
-					key2, _ := client.ObjectKeyFromObject(op2)
+					key1 := client.ObjectKeyFromObject(op1)
+					key2 := client.ObjectKeyFromObject(op2)
 
 					k8sClient.Get(ctx, key1, op1)
 					k8sClient.Get(ctx, key2, op2)
@@ -563,8 +522,8 @@ var _ = Describe("NodeOperation", func() {
 				Expect(k8sClient.Create(ctx, op2)).NotTo(HaveOccurred())
 
 				Eventually(func() []nodeopsv1alpha1.NodeOperationPhase {
-					key1, _ := client.ObjectKeyFromObject(op1)
-					key2, _ := client.ObjectKeyFromObject(op2)
+					key1 := client.ObjectKeyFromObject(op1)
+					key2 := client.ObjectKeyFromObject(op2)
 
 					k8sClient.Get(ctx, key1, op1)
 					k8sClient.Get(ctx, key2, op2)

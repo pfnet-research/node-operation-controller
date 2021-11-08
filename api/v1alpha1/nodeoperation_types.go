@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,7 +46,7 @@ const (
 type NodeOperationSpecTemplate struct {
 	// EvictionStrategy defines how to evict pods before performing the node operation.
 	// The value must be one of Evict, Delete, ForceDelete, None (default=Evict)
-	// TODO(omura): add default markers in the future for CRD
+	// TODO(everpeace): add default markers in the future for CRD
 	//   ref: https://github.com/kubernetes-sigs/controller-tools/issues/250
 	// +kubebuilder:validation:Enum=Evict;Delete;ForceDelete;None
 	EvictionStrategy             NodeOperationEvictionStrategy `json:"evictionStrategy,omitempty"`
@@ -72,21 +73,20 @@ type JobTemplateSpec struct {
 type NodeOperationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
 	Phase        NodeOperationPhase     `json:"phase"`
 	Reason       string                 `json:"reason"`
 	JobNamespace string                 `json:"jobNamespace"` // Deprecated
 	JobName      string                 `json:"jobName"`      // Deprecated
-	JobReference corev1.ObjectReference `json:"jobReference,omitEmpty"`
+	JobReference corev1.ObjectReference `json:"jobReference,omitempty"`
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
-// +kubebuilder:printcolumn:name="NodeName",type=string,JSONPath=`.spec.nodeName`
-// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
-// +kubebuilder:printcolumn:name="Job Namespace",type=string,JSONPath=`.status.JobNamespace`,priority=1
-// +kubebuilder:printcolumn:name="Job Name",type=string,JSONPath=`.status.JobName`,priority=1
-// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+//+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
+//+kubebuilder:printcolumn:name="NodeName",type=string,JSONPath=`.spec.nodeName`
+//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
+//+kubebuilder:printcolumn:name="Job Namespace",type=string,JSONPath=`.status.JobNamespace`,priority=1
+//+kubebuilder:printcolumn:name="Job Name",type=string,JSONPath=`.status.JobName`,priority=1
+//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // NodeOperation is the Schema for the nodeoperations API
 type NodeOperation struct {
@@ -97,7 +97,7 @@ type NodeOperation struct {
 	Status NodeOperationStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // NodeOperationList contains a list of NodeOperation
 type NodeOperationList struct {

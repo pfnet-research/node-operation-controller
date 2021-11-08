@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,10 +56,10 @@ type NodeDisruptionBudgetStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
-// +kubebuilder:printcolumn:name="MaxUnavailable",type=integer,JSONPath=`.spec.maxUnavailable`
-// +kubebuilder:printcolumn:name="MinAvailable",type=integer,JSONPath=`.spec.minAvailable`
+//+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
+//+kubebuilder:printcolumn:name="MaxUnavailable",type=integer,JSONPath=`.spec.maxUnavailable`
+//+kubebuilder:printcolumn:name="MinAvailable",type=integer,JSONPath=`.spec.minAvailable`
 
 // NodeDisruptionBudget is the Schema for the nodedisruptionbudgets API
 type NodeDisruptionBudget struct {
@@ -69,7 +70,7 @@ type NodeDisruptionBudget struct {
 	Status NodeDisruptionBudgetStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // NodeDisruptionBudgetList contains a list of NodeDisruptionBudget
 type NodeDisruptionBudgetList struct {

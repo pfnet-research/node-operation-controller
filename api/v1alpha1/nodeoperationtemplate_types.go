@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,8 +42,8 @@ type NodeOperationTemplateStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
+//+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
 
 // NodeOperationTemplate is the Schema for the nodeoperationtemplates API
 type NodeOperationTemplate struct {
@@ -53,7 +54,7 @@ type NodeOperationTemplate struct {
 	Status NodeOperationTemplateStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // NodeOperationTemplateList contains a list of NodeOperationTemplate
 type NodeOperationTemplateList struct {

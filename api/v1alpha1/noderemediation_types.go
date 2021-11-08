@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -50,15 +51,14 @@ type NodeConditionMatcher struct {
 type NodeRemediationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
 	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitEmpty"`
 	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
 	OperationsCount int64 `json:"operationsCount"`
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
-// +kubebuilder:subresource:status
+//+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
+//+kubebuilder:subresource:status
 
 // NodeRemediation is the Schema for the noderemediations API
 type NodeRemediation struct {
@@ -69,7 +69,7 @@ type NodeRemediation struct {
 	Status NodeRemediationStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // NodeRemediationList contains a list of NodeRemediation
 type NodeRemediationList struct {

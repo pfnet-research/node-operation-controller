@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,8 +43,8 @@ type NodeRemediationTemplateStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
+//+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
 
 // NodeRemediationTemplate is the Schema for the noderemediationtemplates API
 type NodeRemediationTemplate struct {
@@ -54,7 +55,7 @@ type NodeRemediationTemplate struct {
 	Status NodeRemediationTemplateStatus `json:"status,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
 
 // NodeRemediationTemplateList contains a list of NodeRemediationTemplate
 type NodeRemediationTemplateList struct {

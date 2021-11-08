@@ -1,0 +1,20 @@
+# permissions for end users to view nodeoperations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nodeoperation-viewer-role
+rules:
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - nodeops.k8s.preferred.jp
+  resources:
+  - nodeoperations/status
+  verbs:
+  - get
