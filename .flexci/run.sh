@@ -2,8 +2,10 @@
 set -eux
 set -o pipefail
 
+GO_VERSION="1.19"
+
 rm -rf /usr/local/go
-curl -Lo /tmp/go.tar.gz https://golang.org/dl/go1.16.10.linux-amd64.tar.gz
+curl -Lo /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
 tar -C /usr/local -xzf /tmp/go.tar.gz
 curl -Lo /tmp/kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
 chmod +x /tmp/kind

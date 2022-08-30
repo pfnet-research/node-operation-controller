@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the nodeops v1alpha1 API group
-//+kubebuilder:object:generate=true
-//+groupName=nodeops.k8s.preferred.jp
+// +kubebuilder:object:generate=true
+// +groupName=nodeops.k8s.preferred.jp
 package v1alpha1
 
 import (
