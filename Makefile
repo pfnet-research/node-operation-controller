@@ -131,4 +131,5 @@ envtest: ## Download envtest-setup locally if necessary.
 	GOBIN=$(PROJECT_DIR)/bin go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 .PHONY: clean
+clean:
 	rm -rf $(PROJECT_DIR)/bin
