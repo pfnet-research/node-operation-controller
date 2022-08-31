@@ -329,7 +329,7 @@ var _ = Describe("NodeOperation", func() {
 
 			Eventually(func() nodeopsv1alpha1.NodeOperationPhase {
 				key := client.ObjectKeyFromObject(op)
-				k8sClient.Get(ctx, key, op)
+				_ = k8sClient.Get(ctx, key, op)
 				return op.Status.Phase
 			}, eventuallyTimeout).Should(Equal(nodeopsv1alpha1.NodeOperationPhaseCompleted))
 
@@ -423,8 +423,8 @@ var _ = Describe("NodeOperation", func() {
 			key1 := client.ObjectKeyFromObject(op1)
 			key2 := client.ObjectKeyFromObject(op2)
 
-			k8sClient.Get(ctx, key1, op1)
-			k8sClient.Get(ctx, key2, op2)
+			_ = k8sClient.Get(ctx, key1, op1)
+			_ = k8sClient.Get(ctx, key2, op2)
 
 			return []nodeopsv1alpha1.NodeOperationPhase{op1.Status.Phase, op2.Status.Phase}
 		}, eventuallyTimeout).Should(Equal([]nodeopsv1alpha1.NodeOperationPhase{
@@ -443,7 +443,7 @@ var _ = Describe("NodeOperation", func() {
 
 			Eventually(func() nodeopsv1alpha1.NodeOperationPhase {
 				key := client.ObjectKeyFromObject(op)
-				k8sClient.Get(ctx, key, op)
+				_ = k8sClient.Get(ctx, key, op)
 				return op.Status.Phase
 			}, eventuallyTimeout).Should(Equal(nodeopsv1alpha1.NodeOperationPhaseRunning))
 
@@ -490,8 +490,8 @@ var _ = Describe("NodeOperation", func() {
 					key1 := client.ObjectKeyFromObject(op1)
 					key2 := client.ObjectKeyFromObject(op2)
 
-					k8sClient.Get(ctx, key1, op1)
-					k8sClient.Get(ctx, key2, op2)
+					_ = k8sClient.Get(ctx, key1, op1)
+					_ = k8sClient.Get(ctx, key2, op2)
 
 					return []nodeopsv1alpha1.NodeOperationPhase{op1.Status.Phase, op2.Status.Phase}
 				}, eventuallyTimeout).Should(Equal([]nodeopsv1alpha1.NodeOperationPhase{
@@ -525,8 +525,8 @@ var _ = Describe("NodeOperation", func() {
 					key1 := client.ObjectKeyFromObject(op1)
 					key2 := client.ObjectKeyFromObject(op2)
 
-					k8sClient.Get(ctx, key1, op1)
-					k8sClient.Get(ctx, key2, op2)
+					_ = k8sClient.Get(ctx, key1, op1)
+					_ = k8sClient.Get(ctx, key2, op2)
 
 					return []nodeopsv1alpha1.NodeOperationPhase{op1.Status.Phase, op2.Status.Phase}
 				}, eventuallyTimeout).Should(Equal([]nodeopsv1alpha1.NodeOperationPhase{
