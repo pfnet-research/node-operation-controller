@@ -51,7 +51,7 @@ type NodeConditionMatcher struct {
 type NodeRemediationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitEmpty"`
+	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitempty"`
 	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
 	OperationsCount int64 `json:"operationsCount"`
 }

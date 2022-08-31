@@ -51,13 +51,6 @@ func main() {
 	}
 }
 
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // windows
-}
-
 func removeConditions(conditions []corev1.NodeCondition, strtypes []string) []corev1.NodeCondition {
 	types := make([]corev1.NodeConditionType, len(strtypes))
 	for i, t := range strtypes {
