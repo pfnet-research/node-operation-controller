@@ -110,7 +110,6 @@ spec:
                 format: int64
                 type: integer
             required:
-            - activeNodeOperation
             - operationsCount
             type: object
         type: object

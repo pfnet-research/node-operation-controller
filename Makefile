@@ -7,8 +7,6 @@ IMG ?= ghcr.io/pfnet-research/node-operation-controller:$(TAG)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.24
 
-export KUBECONFIG=$(shell pwd)/tmp/node-operation-controller-test.kubeconfig.yaml
-
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -53,7 +51,7 @@ $(CONTROLLER_GEN): ## Download controller-gen locally if necessary.
 KUSTOMIZE := $(CURDIR)/bin/kustomize
 KUSTOMIZE_VERSION ?= v4.5.7
 $(KUSTOMIZE): ## Download kustomize locally if necessary.
-	GOBIN=$(PROJECT_DIR)/bin go install sigs.k8s.io/kustomize/kustomize/v3@$(KUSTOMIZE_VERSION)
+	GOBIN=$(PROJECT_DIR)/bin go install sigs.k8s.io/kustomize/kustomize/v4@$(KUSTOMIZE_VERSION)
 
 ENVTEST := $(CURDIR)/bin/setup-envtest
 $(ENVTEST): ## Download envtest-setup locally if necessary.
@@ -93,18 +91,20 @@ vet: ## Run go vet against code.
 lint: ## Run golangci-lint against code.
 	$(DOCKER_BUILD) --target lint .
 
+KUBECONFIG := $(CURDIR)/tmp/node-operation-controller-test.kubeconfig.yaml
+
 .PHONY: test
 test: manifests generate fmt vet lint $(ENVTEST) kind-for-test ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" KUBECONFIG=$(KUBECONFIG) go test ./... -coverprofile cover.out
 
 test-focus: generate fmt vet manifests kind-for-test
 	ginkgo -focus "${FOCUS}" ./...
 
 kind-for-test: $(KIND) $(KUBECTL)
-	($(KIND) get clusters | grep -q node-operation-controller-test && $(KIND) delete cluster --name=node-operation-controller-test) || true
+	$(KIND) delete cluster --name=node-operation-controller-test || true
 	$(KIND) create cluster --name=node-operation-controller-test --config=config/kind/test.yaml --kubeconfig=$(KUBECONFIG)
-	$(KUBECTL) delete deploy -n kube-system coredns
-	$(KUBECTL) delete deploy -n local-path-storage local-path-provisioner
+	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete deploy -n kube-system coredns
+	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete deploy -n local-path-storage local-path-provisioner
 
 ##@ Build
 
