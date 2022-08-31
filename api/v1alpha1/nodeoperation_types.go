@@ -84,8 +84,8 @@ type NodeOperationStatus struct {
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:printcolumn:name="NodeName",type=string,JSONPath=`.spec.nodeName`
 //+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
-//+kubebuilder:printcolumn:name="Job Namespace",type=string,JSONPath=`.status.JobNamespace`,priority=1
-//+kubebuilder:printcolumn:name="Job Name",type=string,JSONPath=`.status.JobName`,priority=1
+//+kubebuilder:printcolumn:name="Job Namespace",type=string,JSONPath=`.status.jobReference.namespace`,priority=1
+//+kubebuilder:printcolumn:name="Job Name",type=string,JSONPath=`.status.jobReference.name`,priority=1
 //+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 
 // NodeOperation is the Schema for the nodeoperations API
