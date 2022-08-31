@@ -1,7 +1,9 @@
 DOCKER_BUILD ?= DOCKER_BUILDKIT=1 docker build --progress plain
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+TAG := $(shell git describe --tags --always --dirty)
+IMG ?= ghcr.io/pfnet-research/node-operation-controller:$(TAG)
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.24
 
@@ -57,6 +59,18 @@ ENVTEST := $(CURDIR)/bin/setup-envtest
 $(ENVTEST): ## Download envtest-setup locally if necessary.
 	GOBIN=$(PROJECT_DIR)/bin go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
+KUBECTL := $(CURDIR)/bin/kubectl
+KUBECTL_VERSION ?= v1.25.0
+$(KUBECTL): ## Download kubectl locally if necessary.
+	curl -Lo $(PROJECT_DIR)/bin/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+	chmod +x $(PROJECT_DIR)/bin/kubectl
+
+KIND := $(CURDIR)/bin/kind
+KIND_VERSION ?= v0.14.0
+$(KIND): ## Download kind locally if necessary.
+	curl -Lo $(PROJECT_DIR)/bin/kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+	chmod +x $(PROJECT_DIR)/bin/kind
+
 ##@ Development
 
 .PHONY: manifests
@@ -86,11 +100,11 @@ test: manifests generate fmt vet lint $(ENVTEST) kind-for-test ## Run tests.
 test-focus: generate fmt vet manifests kind-for-test
 	ginkgo -focus "${FOCUS}" ./...
 
-kind-for-test:
-	(kind get clusters | grep -q node-operation-controller-test && kind delete cluster --name=node-operation-controller-test) || true
-	kind create cluster --name=node-operation-controller-test --config=config/kind/test.yaml --kubeconfig=$(KUBECONFIG)
-	kubectl delete deploy -n kube-system coredns
-	kubectl delete deploy -n local-path-storage local-path-provisioner
+kind-for-test: $(KIND) $(KUBECTL)
+	($(KIND) get clusters | grep -q node-operation-controller-test && $(KIND) delete cluster --name=node-operation-controller-test) || true
+	$(KIND) create cluster --name=node-operation-controller-test --config=config/kind/test.yaml --kubeconfig=$(KUBECONFIG)
+	$(KUBECTL) delete deploy -n kube-system coredns
+	$(KUBECTL) delete deploy -n local-path-storage local-path-provisioner
 
 ##@ Build
 
@@ -117,21 +131,21 @@ ifndef ignore-not-found
 endif
 
 .PHONY: install
-install: manifests $(KUSTOMIZE) ## Install CRDs into the K8s cluster specified in ~/.kube/config.
-	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+install: manifests $(KUSTOMIZE) $(KUBECTL) ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
 
 .PHONY: uninstall
-uninstall: manifests $(KUSTOMIZE) ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/crd | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+uninstall: manifests $(KUSTOMIZE) $(KUBECTL) ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy
-deploy: manifests $(KUSTOMIZE) ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy: manifests $(KUSTOMIZE) $(KUBECTL) ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
 
 .PHONY: undeploy
-undeploy: $(KUSTOMIZE) ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+undeploy: $(KUSTOMIZE) $(KUBECTL) ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: clean
 clean:
