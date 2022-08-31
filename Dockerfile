@@ -1,5 +1,4 @@
-# Build the manager binary
-FROM golang:1.19 AS builder
+FROM golang:1.19 AS base
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -9,7 +8,17 @@ COPY go.* .
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-# Build
+FROM golangci/golangci-lint:v1.49 AS lint-base
+FROM base AS lint
+RUN --mount=target=. \
+    --mount=from=lint-base,src=/usr/bin/golangci-lint,target=/usr/bin/golangci-lint \
+    --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/root/.cache/golangci-lint \
+    golangci-lint run --timeout 10m0s ./...
+
+FROM base AS build
+# Build the manager binary
 RUN --mount=target=. \
     --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -19,6 +28,6 @@ RUN --mount=target=. \
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
-COPY --from=builder /out/manager .
+COPY --from=build /out/manager .
 
 ENTRYPOINT ["/manager"]

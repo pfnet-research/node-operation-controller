@@ -1,3 +1,4 @@
+DOCKER_BUILD ?= DOCKER_BUILDKIT=1 docker build --progress plain
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
@@ -74,8 +75,12 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: lint
+lint: ## Run golangci-lint against code.
+	$(DOCKER_BUILD) --target lint .
+
 .PHONY: test
-test: manifests generate fmt vet $(ENVTEST) kind-for-test ## Run tests.
+test: manifests generate fmt vet lint $(ENVTEST) kind-for-test ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
 test-focus: generate fmt vet manifests kind-for-test
@@ -99,7 +104,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
-	DOCKER_BUILDKIT=1 docker build -t ${IMG} .
+	$(DOCKER_BUILD) -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
