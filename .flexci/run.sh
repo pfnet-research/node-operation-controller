@@ -2,13 +2,17 @@
 set -eux
 set -o pipefail
 
+GO_VERSION="1.19"
+KIND_VERSION="v0.14.0"
+KUBECTL_VERSION="v1.25.0"
+
 rm -rf /usr/local/go
-curl -Lo /tmp/go.tar.gz https://golang.org/dl/go1.16.10.linux-amd64.tar.gz
+curl -Lo /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
 tar -C /usr/local -xzf /tmp/go.tar.gz
-curl -Lo /tmp/kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+curl -Lo /tmp/kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
 chmod +x /tmp/kind
 mv /tmp/kind /usr/local/bin/kind
-curl -Lo /tmp/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.21.4/bin/linux/amd64/kubectl
+curl -Lo /tmp/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
 chmod +x /tmp/kubectl
 mv /tmp/kubectl /usr/local/bin/kubectl
 
