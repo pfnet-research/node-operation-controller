@@ -1,12 +1,12 @@
 # Adds namespace to all resources.
-namespace: kubebuilder-v3-system
+namespace: node-operation-controller-system
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named
 # "wordpress" becomes "alices-wordpress".
 # Note that it should also match with the prefix (text before '-') of the namespace
 # field above.
-namePrefix: kubebuilder-v3-
+namePrefix: node-operation-controller-
 
 # Labels to add to all resources and selectors.
 #commonLabels:
