@@ -3,16 +3,15 @@
 ## Create a kind cluster
 
 ```
-$ kind create cluster --config=tutorial/kind.yaml --name=nodeops-tutorial
-$ export KUBECONFIG="$(kind get kubeconfig-path --name="nodeops-tutorial")"
+$ kind create cluster --config tutorial/kind.yaml --name nodeops-tutorial
 ```
 
 ```
-$ kubectl get nodes
-NAME                             STATUS   ROLES    AGE     VERSION
-nodeops-tutorial-control-plane   Ready    master   2m30s   v1.15.3
-nodeops-tutorial-worker          Ready    <none>   116s    v1.15.3
-nodeops-tutorial-worker2         Ready    <none>   116s    v1.15.3
+$ kubectl get node
+NAME                             STATUS   ROLES           AGE   VERSION
+nodeops-tutorial-control-plane   Ready    control-plane   59s   v1.24.0
+nodeops-tutorial-worker          Ready    <none>          23s   v1.24.0
+nodeops-tutorial-worker2         Ready    <none>          23s   v1.24.0
 ```
 
 ## Deploy a controller
@@ -27,7 +26,6 @@ $ make run
 Open another terminal (keep `make run` running):
 
 ```
-$ export KUBECONFIG="$(kind get kubeconfig-path --name="nodeops-tutorial")"
 $ cat tutorial/nodeoperation-tutorial1.yaml
 $ kubectl apply -f tutorial/nodeoperation-tutorial1.yaml
 ```
@@ -81,6 +79,15 @@ $ kubectl label node nodeops-tutorial-worker 'auto-remediation='
 ```
 $ kubectl proxy --port=8090 &
 $ curl -H 'content-type: application/json-patch+json' -d '[{"op": "add", "path": "/status/conditions", "value": [{"status": "True", "type": "Tutorial"}] }]' -XPATCH 'localhost:8090/api/v1/nodes/nodeops-tutorial-worker/status'
+```
+
+```
+$ kubectl get nodeoperation
+NAME                                            NODENAME                   PHASE       AGE
+tutorial1                                       nodeops-tutorial-worker    Completed   20m
+tutorial1-nodeops-tutorial-worker-fpmg7-zs42p   nodeops-tutorial-worker    Completed   51s
+tutorial2                                       nodeops-tutorial-worker    Completed   10m
+tutorial3                                       nodeops-tutorial-worker2   Completed   10m
 ```
 
 ## Clean up

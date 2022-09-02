@@ -1,5 +1,5 @@
 apiVersion: nodeops.k8s.preferred.jp/v1alpha1
-kind: NodeRemediationRule
+kind: NodeRemediationTemplate
 metadata:
   name: tutorial1
 spec:
