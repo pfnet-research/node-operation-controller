@@ -31,6 +31,7 @@ Node operation controller automates these steps. In addition, this controller:
             - [`taintTargets`](#tainttargets)
         - [NodeRemediation](#noderemediation-1)
         - [NodeRemediationTemplate](#noderemediationtemplate)
+    - [How to release](#how-to-release)
 
 <!-- /TOC -->
 
@@ -221,3 +222,7 @@ spec:
         - type: OtherCondition
           status: "Unknown"
 ```
+
+## How to Release
+
+The release process is fully automated by [tagpr](https://github.com/Songmu/tagpr). To release, just merge [the latest release PR](https://github.com/pfnet-research/node-operation-controller/pulls?q=is:pr+is:open+label:tagpr).
