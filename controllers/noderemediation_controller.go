@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"time"
 
 	nodeopsv1alpha1 "github.com/pfnet-research/node-operation-controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -130,6 +131,28 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, nil
 	}
 
+	if remediation.Status.LastNodeOperationCreatedAt != "" && remediation.Spec.CooldownDuration != "" {
+		lastNodeOperationCreatedAt, err := time.Parse(time.RFC3339, remediation.Status.LastNodeOperationCreatedAt)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		cooldownDuration, err := time.ParseDuration(remediation.Spec.CooldownDuration)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		timeUntilCooldownEnds := time.Until(lastNodeOperationCreatedAt.Add(cooldownDuration))
+
+		if timeUntilCooldownEnds > 0 {
+			r.eventRecorder.Eventf(&remediation, corev1.EventTypeNormal, "NodeIsNotRemediated", `Skipping to create a NodeOperation because of cooldown time.`)
+			return ctrl.Result{
+				Requeue:      true,
+				RequeueAfter: timeUntilCooldownEnds,
+			}, nil
+		}
+	}
+
 	// Create nodeOperation
 	var nodeOpTemplate nodeopsv1alpha1.NodeOperationTemplate
 	if err := r.Get(ctx, types.NamespacedName{Name: remediation.Spec.NodeOperationTemplateName}, &nodeOpTemplate); err != nil {
@@ -167,6 +190,7 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 	remediation.Status.ActiveNodeOperation = *ref
 	remediation.Status.OperationsCount++
+	remediation.Status.LastNodeOperationCreatedAt = time.Now().Format(time.RFC3339)
 	if err := r.Status().Update(ctx, &remediation); err != nil {
 		return ctrl.Result{}, err
 	}

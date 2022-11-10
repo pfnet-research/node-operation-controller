@@ -36,6 +36,7 @@ type NodeRemediationSpec struct {
 
 	NodeRemediationSpecTemplate `json:",inline"`
 	NodeName                    string `json:"nodeName"`
+	CooldownDuration            string `json:"cooldownDuration"`
 }
 
 type NodeRemediationRule struct {
@@ -54,6 +55,8 @@ type NodeRemediationStatus struct {
 	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitempty"`
 	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
 	OperationsCount int64 `json:"operationsCount"`
+	// LastNodeOperationCreatedAt represents the time at which the last NodeOperation is created
+	LastNodeOperationCreatedAt string `json:"lastNodeOperationCreatedAt"`
 }
 
 //+kubebuilder:object:root=true

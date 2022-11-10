@@ -35,6 +35,8 @@ spec:
           spec:
             description: NodeRemediationSpec defines the desired state of NodeRemediation
             properties:
+              cooldownDuration:
+                type: string
               nodeName:
                 type: string
               nodeOperationTemplateName:
@@ -57,6 +59,7 @@ spec:
                 - conditions
                 type: object
             required:
+            - cooldownDuration
             - nodeName
             - nodeOperationTemplateName
             - rule
@@ -103,6 +106,10 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              lastNodeOperationCreatedAt:
+                description: LastNodeOperationCreatedAt represents the time at which
+                  the last NodeOperation is created
+                type: string
               operationsCount:
                 description: OperationsCount is num of NodeOperations executed by
                   the NodeRemediation. Once the Node is remediated, this count will
@@ -110,6 +117,7 @@ spec:
                 format: int64
                 type: integer
             required:
+            - lastNodeOperationCreatedAt
             - operationsCount
             type: object
         type: object
