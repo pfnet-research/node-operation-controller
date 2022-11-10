@@ -113,7 +113,8 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
-	if !doesMatchConditions(node.Status.Conditions, remediation.Spec.Rule.Conditions) {
+	matchedConditions := compareConditions(node.Status.Conditions, remediation.Spec.Rule.Conditions)
+	if matchedConditions == nil {
 		// reset OperationsCount
 		remediation.Status.OperationsCount = 0
 		if err := r.Status().Update(ctx, &remediation); err != nil {
@@ -127,6 +128,26 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if 0 < remediation.Status.OperationsCount {
 		// TODO: backoff feature.  We can calculate the next backoff-ed trial timestamp from the counter value and the latest child NodeOperation completion timestamp
 		r.eventRecorder.Eventf(&remediation, corev1.EventTypeNormal, "NodeIsNotRemediated", `Though a NodeOperation has finished, the Node is not remediated. Skipping to create a NodeOperation.`)
+		return ctrl.Result{}, nil
+	}
+
+	conditionChanged := func() bool {
+		for _, cond := range matchedConditions {
+			changed := true
+			for _, lastCond := range remediation.Status.LastOperatedConditions {
+				if cond.Type == lastCond.Type && !cond.LastHeartbeatTime.After(lastCond.LastHeartbeatTime.Time) {
+					changed = false
+				}
+			}
+			if changed {
+				return true
+			}
+		}
+		return false
+	}()
+
+	if !conditionChanged {
+		r.eventRecorder.Eventf(&remediation, corev1.EventTypeNormal, "NodeIsNotRemediated", `Skipping to create a NodeOperation because Node condition is not changed since last remediation.`)
 		return ctrl.Result{}, nil
 	}
 
@@ -167,6 +188,7 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 	remediation.Status.ActiveNodeOperation = *ref
 	remediation.Status.OperationsCount++
+	remediation.Status.LastOperatedConditions = matchedConditions
 	if err := r.Status().Update(ctx, &remediation); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -226,17 +248,20 @@ func (r *NodeRemediationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func doesMatchConditions(conditions []corev1.NodeCondition, matchers []nodeopsv1alpha1.NodeConditionMatcher) bool {
+func compareConditions(conditions []corev1.NodeCondition, matchers []nodeopsv1alpha1.NodeConditionMatcher) []corev1.NodeCondition {
+	var matchedConditions []corev1.NodeCondition
 	for _, matcher := range matchers {
-		ok := false
+		matched := false
 		for _, cond := range conditions {
 			if cond.Type == matcher.Type && cond.Status == matcher.Status {
-				ok = true
+				matchedConditions = append(matchedConditions, cond)
+				matched = true
+				break
 			}
 		}
-		if !ok {
-			return false
+		if !matched {
+			return nil
 		}
 	}
-	return true
+	return matchedConditions
 }

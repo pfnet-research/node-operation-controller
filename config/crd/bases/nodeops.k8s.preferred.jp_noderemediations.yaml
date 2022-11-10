@@ -103,6 +103,40 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
+              lastOperatedConditions:
+                description: LastOperatedConditions are the last Node conditions that
+                  trigger remediation.
+                items:
+                  description: NodeCondition contains condition information for a
+                    node.
+                  properties:
+                    lastHeartbeatTime:
+                      description: Last time we got an update on a given condition.
+                      format: date-time
+                      type: string
+                    lastTransitionTime:
+                      description: Last time the condition transit from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: Human readable message indicating details about
+                        last transition.
+                      type: string
+                    reason:
+                      description: (brief) reason for the condition's last transition.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of node condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
               operationsCount:
                 description: OperationsCount is num of NodeOperations executed by
                   the NodeRemediation. Once the Node is remediated, this count will

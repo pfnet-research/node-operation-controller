@@ -54,6 +54,8 @@ type NodeRemediationStatus struct {
 	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitempty"`
 	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
 	OperationsCount int64 `json:"operationsCount"`
+	// LastOperatedConditions are the last Node conditions that trigger remediation.
+	LastOperatedConditions []corev1.NodeCondition `json:"lastOperatedConditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true
