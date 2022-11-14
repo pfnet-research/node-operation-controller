@@ -171,7 +171,7 @@ spec:
   template:
     metadata: {}
     spec: # NodeOperationSpec
-      job:
+      jobTemplate:
         metadata:
           namespace: default
         spec: # batchv1.JobSpec
