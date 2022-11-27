@@ -72,6 +72,19 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
+	var node corev1.Node
+	if err := r.Get(ctx, types.NamespacedName{Name: remediation.Spec.NodeName}, &node); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	nodeStatus := remediation.CompareNodeCondition(node.Status.Conditions)
+	if nodeStatus != remediation.Status.NodeStatus {
+		remediation.Status.NodeStatus = nodeStatus
+		if err := r.Status().Update(ctx, &remediation); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	var childOps nodeopsv1alpha1.NodeOperationList
 	if err := r.List(ctx, &childOps, client.MatchingFields{operationRemediationOwnerKey: remediation.Name}); err != nil {
 		return ctrl.Result{}, err
@@ -108,12 +121,10 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	}
 
 	// Check node condition
-	var node corev1.Node
-	if err := r.Get(ctx, types.NamespacedName{Name: remediation.Spec.NodeName}, &node); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if !doesMatchConditions(node.Status.Conditions, remediation.Spec.Rule.Conditions) {
+	switch remediation.Status.NodeStatus {
+	case nodeopsv1alpha1.NodeStatusUnknown:
+		return ctrl.Result{}, nil
+	case nodeopsv1alpha1.NodeStatusOK:
 		// reset OperationsCount
 		remediation.Status.OperationsCount = 0
 		if err := r.Status().Update(ctx, &remediation); err != nil {
@@ -224,19 +235,4 @@ func (r *NodeRemediationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&nodeopsv1alpha1.NodeOperation{}).
 		Watches(&source.Kind{Type: &corev1.Node{}}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
 		Complete(r)
-}
-
-func doesMatchConditions(conditions []corev1.NodeCondition, matchers []nodeopsv1alpha1.NodeConditionMatcher) bool {
-	for _, matcher := range matchers {
-		ok := false
-		for _, cond := range conditions {
-			if cond.Type == matcher.Type && cond.Status == matcher.Status {
-				ok = true
-			}
-		}
-		if !ok {
-			return false
-		}
-	}
-	return true
 }

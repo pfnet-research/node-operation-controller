@@ -47,6 +47,14 @@ type NodeConditionMatcher struct {
 	Status corev1.ConditionStatus   `json:"status"`
 }
 
+type NodeStatus string
+
+const (
+	NodeStatusUnknown NodeStatus = ""
+	NodeStatusOK      NodeStatus = "OK"
+	NodeStatusBad     NodeStatus = "Bad"
+)
+
 // NodeRemediationStatus defines the observed state of NodeRemediation
 type NodeRemediationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
@@ -54,6 +62,8 @@ type NodeRemediationStatus struct {
 	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitempty"`
 	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
 	OperationsCount int64 `json:"operationsCount"`
+	// NodeStatus represents whether Node should be remediated or not.
+	NodeStatus NodeStatus `json:"nodeStatus"`
 }
 
 //+kubebuilder:object:root=true
@@ -80,4 +90,22 @@ type NodeRemediationList struct {
 
 func init() {
 	SchemeBuilder.Register(&NodeRemediation{}, &NodeRemediationList{})
+}
+
+func (r *NodeRemediation) CompareNodeCondition(conditions []corev1.NodeCondition) NodeStatus {
+matchersLoop:
+	for _, matcher := range r.Spec.Rule.Conditions {
+		for _, cond := range conditions {
+			if cond.Type == matcher.Type {
+				switch cond.Status {
+				case matcher.Status:
+					continue matchersLoop
+				case corev1.ConditionUnknown:
+					return NodeStatusUnknown
+				}
+			}
+		}
+		return NodeStatusOK
+	}
+	return NodeStatusBad
 }

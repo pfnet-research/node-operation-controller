@@ -106,6 +106,15 @@ type NodeOperationList struct {
 	Items           []NodeOperation `json:"items"`
 }
 
+func (o *NodeOperation) NodeRemediationName() string {
+	for _, owner := range o.OwnerReferences {
+		if owner.APIVersion == GroupVersion.String() && owner.Kind == "NodeRemediation" {
+			return owner.Name
+		}
+	}
+	return ""
+}
+
 func init() {
 	SchemeBuilder.Register(&NodeOperation{}, &NodeOperationList{})
 }
