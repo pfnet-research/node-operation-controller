@@ -113,7 +113,10 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
-	if !doesMatchConditions(node.Status.Conditions, remediation.Spec.Rule.Conditions) {
+	switch compareConditions(node.Status.Conditions, remediation.Spec.Rule.Conditions) {
+	case conditionUnknown:
+		return ctrl.Result{}, nil
+	case conditionUnmatched:
 		// reset OperationsCount
 		remediation.Status.OperationsCount = 0
 		if err := r.Status().Update(ctx, &remediation); err != nil {
@@ -226,17 +229,28 @@ func (r *NodeRemediationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func doesMatchConditions(conditions []corev1.NodeCondition, matchers []nodeopsv1alpha1.NodeConditionMatcher) bool {
+type conditionCompareResult int
+
+const (
+	conditionMatched conditionCompareResult = iota
+	conditionUnmatched
+	conditionUnknown
+)
+
+func compareConditions(conditions []corev1.NodeCondition, matchers []nodeopsv1alpha1.NodeConditionMatcher) conditionCompareResult {
+matchersLoop:
 	for _, matcher := range matchers {
-		ok := false
 		for _, cond := range conditions {
-			if cond.Type == matcher.Type && cond.Status == matcher.Status {
-				ok = true
+			if cond.Type == matcher.Type {
+				switch cond.Status {
+				case matcher.Status:
+					continue matchersLoop
+				case corev1.ConditionUnknown:
+					return conditionUnknown
+				}
 			}
 		}
-		if !ok {
-			return false
-		}
+		return conditionUnmatched
 	}
-	return true
+	return conditionMatched
 }
