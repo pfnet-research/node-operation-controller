@@ -103,14 +103,12 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-map-type: atomic
-              operationsCount:
-                description: OperationsCount is num of NodeOperations executed by
-                  the NodeRemediation. Once the Node is remediated, this count will
-                  be reset to 0.
-                format: int64
-                type: integer
+              nodeStatus:
+                description: NodeStatus represents whether Node should be remediated
+                  or not.
+                type: string
             required:
-            - operationsCount
+            - nodeStatus
             type: object
         type: object
     served: true
