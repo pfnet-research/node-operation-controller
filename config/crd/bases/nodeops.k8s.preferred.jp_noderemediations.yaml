@@ -107,8 +107,15 @@ spec:
                 description: NodeStatus represents whether Node should be remediated
                   or not.
                 type: string
+              operationsCount:
+                description: OperationsCount is num of NodeOperations executed by
+                  the NodeRemediation. Once the Node is remediated, this count will
+                  be reset to 0.
+                format: int64
+                type: integer
             required:
             - nodeStatus
+            - operationsCount
             type: object
         type: object
     served: true
