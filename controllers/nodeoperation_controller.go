@@ -359,17 +359,32 @@ func (r *NodeOperationReconciler) reconcileRunning(ctx context.Context, nodeOp *
 		nodeOp.Status.Phase = nodeopsv1alpha1.NodeOperationPhaseFailed
 	} else {
 		_, condition := isJobFinished(&job)
+
 		switch condition {
-		case "": // ongoing
+		case "":
 			return ctrl.Result{}, nil
 		case batchv1.JobFailed:
+			r.eventRecorder.Eventf(nodeOp, "Normal", "JobFinished", `Job "%s" in "%s" has failed`, job.Name, job.Namespace)
 			nodeOp.Status.Reason = "Job has failed"
 			nodeOp.Status.Phase = nodeopsv1alpha1.NodeOperationPhaseFailed
 		case batchv1.JobComplete:
+			r.eventRecorder.Eventf(nodeOp, "Normal", "JobFinished", `Job "%s" in "%s" has completed`, job.Name, job.Namespace)
+
+			if remediationName := nodeOp.NodeRemediationName(); remediationName != "" {
+				var remediation nodeopsv1alpha1.NodeRemediation
+				if err := r.Get(ctx, client.ObjectKey{Namespace: nodeOp.Namespace, Name: remediationName}, &remediation); err != nil {
+					return ctrl.Result{}, err
+				}
+
+				if remediation.Status.NodeStatus != nodeopsv1alpha1.NodeStatusOK {
+					r.eventRecorder.Eventf(nodeOp, corev1.EventTypeNormal, "JobCompletedButNotRemediated", `Job "%s" in "%s" has completed but the Node is not remediated yet.`, job.Name, job.Namespace)
+					return ctrl.Result{}, nil
+				}
+			}
+
 			nodeOp.Status.Reason = "Job has completed"
 			nodeOp.Status.Phase = nodeopsv1alpha1.NodeOperationPhaseCompleted
 		}
-		r.eventRecorder.Eventf(nodeOp, "Normal", "JobFinished", `Job "%s" in "%s" has finished`, job.Name, job.Namespace)
 	}
 
 	// untaint the Node

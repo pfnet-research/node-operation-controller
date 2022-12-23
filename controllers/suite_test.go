@@ -665,7 +665,7 @@ var _ = Describe("NodeRemediation", func() {
 
 		node.Status.Conditions = append(node.Status.Conditions, corev1.NodeCondition{
 			Type:               "TestRemediation",
-			Status:             corev1.ConditionTrue,
+			Status:             corev1.ConditionUnknown,
 			Reason:             "testing",
 			Message:            "testing",
 			LastHeartbeatTime:  metav1.NewTime(time.Now()),
@@ -674,12 +674,32 @@ var _ = Describe("NodeRemediation", func() {
 		Expect(k8sClient.Status().Update(ctx, &node)).NotTo(HaveOccurred())
 
 		Eventually(func() bool {
+			events := &corev1.EventList{}
+			Expect(k8sClient.List(ctx, events)).NotTo(HaveOccurred())
+
+			for _, event := range events.Items {
+				if event.InvolvedObject.GroupVersionKind().String() == "nodeops.k8s.preferred.jp/v1alpha1, Kind=NodeRemediation" &&
+					event.InvolvedObject.Name == remediation.Name &&
+					event.Type == corev1.EventTypeNormal &&
+					event.Reason == "UnknownNodeStatus" {
+					return true
+				}
+			}
+			return false
+		}, eventuallyTimeout).Should(BeTrue())
+
+		node.Status.Conditions[len(node.Status.Conditions)-1].Status = corev1.ConditionTrue
+		Expect(k8sClient.Status().Update(ctx, &node)).NotTo(HaveOccurred())
+
+		var nodeOp *nodeopsv1alpha1.NodeOperation
+		Eventually(func() bool {
 			nodeOpList := nodeopsv1alpha1.NodeOperationList{}
 			Expect(k8sClient.List(ctx, &nodeOpList)).NotTo(HaveOccurred())
 
 			for _, op := range nodeOpList.Items {
 				for _, owner := range op.OwnerReferences {
 					if owner.Kind == "NodeRemediation" && owner.Name == remediation.Name {
+						nodeOp = &op
 						return true
 					}
 				}
@@ -693,10 +713,12 @@ var _ = Describe("NodeRemediation", func() {
 			Expect(k8sClient.List(ctx, events)).NotTo(HaveOccurred())
 
 			for _, event := range events.Items {
-				if event.InvolvedObject.GroupVersionKind().String() == "nodeops.k8s.preferred.jp/v1alpha1, Kind=NodeRemediation" &&
-					event.InvolvedObject.Name == remediation.Name &&
+				gvk := event.InvolvedObject.GroupVersionKind()
+				if gvk.Group == "nodeops.k8s.preferred.jp" &&
+					gvk.Kind == "NodeOperation" &&
+					event.InvolvedObject.Name == nodeOp.Name &&
 					event.Type == corev1.EventTypeNormal &&
-					event.Reason == "NodeIsNotRemediated" {
+					event.Reason == "JobCompletedButNotRemediated" {
 					return true
 				}
 			}
