@@ -28,9 +28,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/printer"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	batchv1 "k8s.io/api/batch/v1"
@@ -58,9 +57,7 @@ var testEnv *envtest.Environment
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	RunSpecsWithDefaultAndCustomReporters(t,
-		"Controller Suite",
-		[]Reporter{printer.NewlineReporter{}})
+	RunSpecs(t, "Controller Suite")
 }
 
 var _ = BeforeSuite(func() {
@@ -126,7 +123,7 @@ var _ = BeforeSuite(func() {
 		}
 		return true
 	}, time.Minute).Should(BeTrue())
-}, 60)
+})
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")
