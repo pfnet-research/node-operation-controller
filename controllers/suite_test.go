@@ -35,6 +35,7 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -723,6 +724,104 @@ var _ = Describe("NodeRemediation", func() {
 				}
 			}
 			return false
+		}, eventuallyTimeout).Should(BeTrue())
+	})
+
+	It("deletes NodeOperation when the Node becomes remediated", func() {
+		ctx := context.Background()
+		nodeName := nodeNames[1]
+
+		template := nodeopsv1alpha1.NodeOperationTemplate{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-remediation-2",
+			},
+			Spec: nodeopsv1alpha1.NodeOperationTemplateSpec{
+				Template: nodeopsv1alpha1.NodeOperationTemplateTemplateSpec{
+					Spec: nodeopsv1alpha1.NodeOperationSpecTemplate{
+						JobTemplate: nodeopsv1alpha1.JobTemplateSpec{
+							Metadata: metav1.ObjectMeta{
+								Namespace: "default",
+							},
+							Spec: batchv1.JobSpec{
+								Template: corev1.PodTemplateSpec{
+									Spec: corev1.PodSpec{
+										Containers: []corev1.Container{{
+											Name:    "c",
+											Image:   "busybox",
+											Command: []string{"sleep", "infinity"},
+										}},
+										RestartPolicy: corev1.RestartPolicyNever,
+										Tolerations: []corev1.Toleration{
+											{Key: controllerTaint.Key, Operator: corev1.TolerationOpExists},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		Expect(k8sClient.Create(ctx, &template)).NotTo(HaveOccurred())
+
+		remediation := nodeopsv1alpha1.NodeRemediation{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "test-remediation-2",
+			},
+			Spec: nodeopsv1alpha1.NodeRemediationSpec{
+				NodeRemediationSpecTemplate: nodeopsv1alpha1.NodeRemediationSpecTemplate{
+					Rule: nodeopsv1alpha1.NodeRemediationRule{
+						Conditions: []nodeopsv1alpha1.NodeConditionMatcher{
+							{Type: "TestRemediation2", Status: corev1.ConditionTrue},
+						},
+					},
+					NodeOperationTemplateName: template.Name,
+				},
+				NodeName: nodeName,
+			},
+		}
+		Expect(k8sClient.Create(ctx, &remediation)).NotTo(HaveOccurred())
+
+		node := corev1.Node{}
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: nodeName}, &node)).NotTo(HaveOccurred())
+
+		node.Status.Conditions = append(node.Status.Conditions, corev1.NodeCondition{
+			Type:               "TestRemediation2",
+			Status:             corev1.ConditionTrue,
+			Reason:             "testing",
+			Message:            "testing",
+			LastHeartbeatTime:  metav1.NewTime(time.Now()),
+			LastTransitionTime: metav1.NewTime(time.Now()),
+		})
+		Expect(k8sClient.Status().Update(ctx, &node)).NotTo(HaveOccurred())
+
+		var nodeOp *nodeopsv1alpha1.NodeOperation
+		Eventually(func() bool {
+			nodeOpList := nodeopsv1alpha1.NodeOperationList{}
+			Expect(k8sClient.List(ctx, &nodeOpList)).NotTo(HaveOccurred())
+
+			for _, op := range nodeOpList.Items {
+				for _, owner := range op.OwnerReferences {
+					if owner.Kind == "NodeRemediation" && owner.Name == remediation.Name {
+						nodeOp = &op
+						return true
+					}
+				}
+			}
+
+			return false
+		}, eventuallyTimeout).Should(BeTrue())
+
+		node.Status.Conditions[len(node.Status.Conditions)-1].Status = corev1.ConditionFalse
+		Expect(k8sClient.Status().Update(ctx, &node)).NotTo(HaveOccurred())
+
+		Eventually(func() bool {
+			err := k8sClient.Get(ctx, client.ObjectKey{
+				Namespace: nodeOp.Namespace,
+				Name:      nodeOp.Name,
+			}, &nodeopsv1alpha1.NodeOperation{})
+
+			return apierrors.IsNotFound(err)
 		}, eventuallyTimeout).Should(BeTrue())
 	})
 })
