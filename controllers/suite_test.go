@@ -812,6 +812,7 @@ var _ = Describe("NodeRemediation", func() {
 			return false
 		}, eventuallyTimeout).Should(BeTrue())
 
+		Expect(k8sClient.Get(ctx, types.NamespacedName{Name: nodeName}, &node)).NotTo(HaveOccurred())
 		node.Status.Conditions[len(node.Status.Conditions)-1].Status = corev1.ConditionFalse
 		Expect(k8sClient.Status().Update(ctx, &node)).NotTo(HaveOccurred())
 
