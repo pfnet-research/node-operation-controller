@@ -22,7 +22,7 @@ import (
 
 	nodeopsv1alpha1 "github.com/pfnet-research/node-operation-controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -65,11 +65,7 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 	var remediation nodeopsv1alpha1.NodeRemediation
 	if err := r.Get(ctx, req.NamespacedName, &remediation); err != nil {
-		sterr, ok := err.(*errors.StatusError)
-		if ok && sterr.Status().Code == 404 {
-			return ctrl.Result{}, nil
-		}
-		return ctrl.Result{}, err
+		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	var node corev1.Node
@@ -115,11 +111,6 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	}
 
-	if remediation.Status.ActiveNodeOperation.Name != "" {
-		// active operation exists
-		return ctrl.Result{}, nil
-	}
-
 	// Check node condition
 	switch remediation.Status.NodeStatus {
 	case nodeopsv1alpha1.NodeStatusUnknown:
@@ -131,6 +122,33 @@ func (r *NodeRemediationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		if err := r.Status().Update(ctx, &remediation); err != nil {
 			return ctrl.Result{}, err
 		}
+
+		if ref := remediation.Status.ActiveNodeOperation; ref.Name != "" {
+			// active operation exists
+			var nodeOp nodeopsv1alpha1.NodeOperation
+			if err := r.Get(ctx, client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}, &nodeOp); apierrors.IsNotFound(err) {
+				// Do nothing
+			} else if err != nil {
+				return ctrl.Result{}, err
+			} else {
+				if err := r.Delete(ctx, &nodeOp); err != nil {
+					return ctrl.Result{}, err
+				}
+
+				r.eventRecorder.Eventf(&remediation, corev1.EventTypeNormal, "DeleteNodeOperation", `Deleted NodeOperation %s because the Node is remediated`, nodeOp.Name)
+			}
+
+			remediation.Status.ActiveNodeOperation = corev1.ObjectReference{}
+			if err := r.Status().Update(ctx, &remediation); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
+
+	if remediation.Status.ActiveNodeOperation.Name != "" {
+		// active operation exists
 		return ctrl.Result{}, nil
 	}
 
