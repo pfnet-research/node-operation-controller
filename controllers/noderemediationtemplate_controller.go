@@ -32,7 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	nodeopsv1alpha1 "github.com/pfnet-research/node-operation-controller/api/v1alpha1"
 )
@@ -177,7 +176,7 @@ func (r *NodeRemediationTemplateReconciler) SetupWithManager(mgr ctrl.Manager) e
 		return err
 	}
 
-	nodeMapFn := func(a client.Object) []reconcile.Request {
+	nodeMapFn := func(ctx context.Context, a client.Object) []reconcile.Request {
 		templates := &nodeopsv1alpha1.NodeRemediationTemplateList{}
 		if err := r.List(context.TODO(), templates); err != nil {
 			logger.Info("Failed to list NodeRemediationTemplates")
@@ -205,6 +204,6 @@ func (r *NodeRemediationTemplateReconciler) SetupWithManager(mgr ctrl.Manager) e
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodeopsv1alpha1.NodeRemediationTemplate{}).
 		Owns(&nodeopsv1alpha1.NodeRemediation{}).
-		Watches(&source.Kind{Type: &corev1.Node{}}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
+		Watches(&corev1.Node{}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
 		Complete(r)
 }
