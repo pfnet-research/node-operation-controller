@@ -33,7 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 var operationRemediationOwnerKey = "operationRemediationOwner"
@@ -224,7 +223,7 @@ func (r *NodeRemediationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	nodeMapFn := func(a client.Object) []reconcile.Request {
+	nodeMapFn := func(ctx context.Context, a client.Object) []reconcile.Request {
 		nodeName := a.GetName()
 
 		remediations := &nodeopsv1alpha1.NodeRemediationList{}
@@ -251,6 +250,6 @@ func (r *NodeRemediationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodeopsv1alpha1.NodeRemediation{}).
 		Owns(&nodeopsv1alpha1.NodeOperation{}).
-		Watches(&source.Kind{Type: &corev1.Node{}}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
+		Watches(&corev1.Node{}, handler.EnqueueRequestsFromMapFunc(nodeMapFn)).
 		Complete(r)
 }
