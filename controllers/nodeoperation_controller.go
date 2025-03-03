@@ -36,6 +36,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 var controllerTaint = corev1.Taint{
@@ -87,16 +88,21 @@ type NodeOperationReconciler struct {
 func (r *NodeOperationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
+	// Add timeout to context
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	nodeOp := &nodeopsv1alpha1.NodeOperation{}
 	if err := r.Get(ctx, req.NamespacedName, nodeOp); err != nil {
 		sterr, ok := err.(*errors.StatusError)
-		if ok && sterr.Status().Code == 404 {
+		if ok && sterr.Status().Code == http.StatusNotFound {
 			if err := r.removeTaints(ctx); err != nil {
+				logger.Error(err, "failed to remove taints")
 				return ctrl.Result{}, err
 			}
 			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, err
+		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	var result ctrl.Result
@@ -410,7 +416,7 @@ func (r *NodeOperationReconciler) reconcileRunning(ctx context.Context, nodeOp *
 func (r *NodeOperationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.clientset = kubernetes.NewForConfigOrDie(mgr.GetConfig())
 	r.mutex = sync.Mutex{}
-	// create index for NodeOperation name
+	// Create a new indexer for jobs that references NodeOperations
 	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &batchv1.Job{}, jobOwnerKey, func(rawObj client.Object) []string {
 		job := rawObj.(*batchv1.Job)
 		owner := metav1.GetControllerOf(job)
@@ -431,6 +437,7 @@ func (r *NodeOperationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodeopsv1alpha1.NodeOperation{}).
 		Owns(&batchv1.Job{}).
+		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Complete(r)
 }
 

@@ -1,16 +1,16 @@
 module github.com/pfnet-research/node-operation-controller
 
-go 1.19
+go 1.22
 
 require (
-	github.com/google/go-cmp v0.5.9
-	github.com/onsi/ginkgo/v2 v2.6.1
-	github.com/onsi/gomega v1.24.1
-	github.com/stretchr/testify v1.8.0
-	k8s.io/api v0.26.1
-	k8s.io/apimachinery v0.26.1
-	k8s.io/client-go v0.26.1
-	sigs.k8s.io/controller-runtime v0.14.1
+	github.com/google/go-cmp v0.6.0
+	github.com/onsi/ginkgo/v2 v2.15.0
+	github.com/onsi/gomega v1.31.1
+	github.com/stretchr/testify v1.8.4
+	k8s.io/api v0.29.2
+	k8s.io/apimachinery v0.29.2
+	k8s.io/client-go v0.29.2
+	sigs.k8s.io/controller-runtime v0.17.2
 )
 
 require (

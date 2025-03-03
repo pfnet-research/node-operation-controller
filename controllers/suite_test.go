@@ -30,18 +30,19 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	nodeopsv1alpha1 "github.com/pfnet-research/node-operation-controller/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
@@ -53,6 +54,8 @@ import (
 var cfg *rest.Config
 var k8sClient client.Client
 var testEnv *envtest.Environment
+var ctx context.Context
+var cancel context.CancelFunc
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -63,12 +66,12 @@ func TestAPIs(t *testing.T) {
 var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
+	ctx, cancel = context.WithCancel(context.Background())
+
 	By("bootstrapping test environment")
-	trueV := true
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "crd", "bases")},
 		ErrorIfCRDPathMissing: true,
-		UseExistingCluster:    &trueV,
 	}
 
 	var err error
@@ -85,35 +88,40 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())
 
-	mgr, err := manager.New(cfg, manager.Options{})
-	Expect(err).NotTo(HaveOccurred())
+	k8sManager, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme: scheme.Scheme,
+	})
+	Expect(err).ToNot(HaveOccurred())
 
 	err = (&NodeOperationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: scheme.Scheme,
-	}).SetupWithManager(mgr)
+		Client:           k8sManager.GetClient(),
+		Scheme:          k8sManager.GetScheme(),
+		DrainInterval:    1 * time.Second,
+		NDBRetryInterval: 1 * time.Second,
+	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&NodeRemediationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: scheme.Scheme,
-	}).SetupWithManager(mgr)
+		Client: k8sManager.GetClient(),
+		Scheme: k8sManager.GetScheme(),
+	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = (&NodeRemediationTemplateReconciler{
-		Client: mgr.GetClient(),
-		Scheme: scheme.Scheme,
-	}).SetupWithManager(mgr)
+		Client: k8sManager.GetClient(),
+		Scheme: k8sManager.GetScheme(),
+	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
 	go func() {
-		err = mgr.Start(context.Background())
+		defer GinkgoRecover()
+		err = k8sManager.Start(ctx)
+		Expect(err).ToNot(HaveOccurred(), "failed to run manager")
 	}()
-	Expect(err).ToNot(HaveOccurred())
 
 	Eventually(func() bool {
 		nodeList := &corev1.NodeList{}
-		Expect(k8sClient.List(context.Background(), nodeList)).NotTo(HaveOccurred())
+		Expect(k8sClient.List(ctx, nodeList)).NotTo(HaveOccurred())
 		for _, node := range nodeList.Items {
 			for _, c := range node.Status.Conditions {
 				if c.Type == corev1.NodeReady && c.Status == corev1.ConditionFalse {
@@ -126,6 +134,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
+	cancel()
 	By("tearing down the test environment")
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
