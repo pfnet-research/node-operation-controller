@@ -27,6 +27,7 @@ type NodeRemediationTemplateSpec struct {
 }
 
 type NodeRemediationTemplateTemplateSpec struct {
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Metadata metav1.ObjectMeta           `json:"metadata,omitempty"`
 	Spec     NodeRemediationSpecTemplate `json:"spec"`
 }

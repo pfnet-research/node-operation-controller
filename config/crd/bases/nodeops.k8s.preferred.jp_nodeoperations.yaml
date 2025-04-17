@@ -72,6 +72,7 @@ spec:
                 properties:
                   metadata:
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   spec:
                     description: JobSpec describes how the job execution will look
                       like.

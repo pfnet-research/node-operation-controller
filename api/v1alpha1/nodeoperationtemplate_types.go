@@ -26,6 +26,7 @@ type NodeOperationTemplateSpec struct {
 }
 
 type NodeOperationTemplateTemplateSpec struct {
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Metadata metav1.ObjectMeta         `json:"metadata"`
 	Spec     NodeOperationSpecTemplate `json:"spec"`
 }

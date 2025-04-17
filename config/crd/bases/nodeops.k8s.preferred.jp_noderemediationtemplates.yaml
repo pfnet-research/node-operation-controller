@@ -49,6 +49,7 @@ spec:
                 properties:
                   metadata:
                     type: object
+                    x-kubernetes-preserve-unknown-fields: true
                   spec:
                     properties:
                       nodeOperationTemplateName:

@@ -50,6 +50,7 @@ const (
 )
 
 type JobTemplateSpec struct {
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Metadata metav1.ObjectMeta `json:"metadata"`
 	Spec     batchv1.JobSpec   `json:"spec"`
 }
