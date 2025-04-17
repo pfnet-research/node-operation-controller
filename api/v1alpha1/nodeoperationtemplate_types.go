@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2025.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// NodeOperationTemplateSpec defines the desired state of NodeOperationTemplate
+// NodeOperationTemplateSpec defines the desired state of NodeOperationTemplate.
 type NodeOperationTemplateSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	Template NodeOperationTemplateTemplateSpec `json:"template"`
 }
 
@@ -36,16 +30,14 @@ type NodeOperationTemplateTemplateSpec struct {
 	Spec     NodeOperationSpecTemplate `json:"spec"`
 }
 
-// NodeOperationTemplateStatus defines the observed state of NodeOperationTemplate
+// NodeOperationTemplateStatus defines the observed state of NodeOperationTemplate.
 type NodeOperationTemplateStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
-// NodeOperationTemplate is the Schema for the nodeoperationtemplates API
+// NodeOperationTemplate is the Schema for the nodeoperationtemplates API.
 type NodeOperationTemplate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -54,9 +46,9 @@ type NodeOperationTemplate struct {
 	Status NodeOperationTemplateStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
-// NodeOperationTemplateList contains a list of NodeOperationTemplate
+// NodeOperationTemplateList contains a list of NodeOperationTemplate.
 type NodeOperationTemplateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

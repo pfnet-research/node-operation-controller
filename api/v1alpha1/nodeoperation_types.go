@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2025.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,26 +22,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-type NodeOperationPhase string
-type NodeOperationEvictionStrategy string
-
-const (
-	NodeOperationPhasePending     NodeOperationPhase = "Pending"
-	NodeOperationPhaseDraining    NodeOperationPhase = "Draining"
-	NodeOperationPhaseDrained     NodeOperationPhase = "Drained"
-	NodeOperationPhaseJobCreating NodeOperationPhase = "JobCreating"
-	NodeOperationPhaseRunning     NodeOperationPhase = "Running"
-	NodeOperationPhaseCompleted   NodeOperationPhase = "Completed"
-	NodeOperationPhaseFailed      NodeOperationPhase = "Failed"
-
-	NodeOperationEvictionStrategyEvict       NodeOperationEvictionStrategy = "Evict"
-	NodeOperationEvictionStrategyDelete      NodeOperationEvictionStrategy = "Delete"
-	NodeOperationEvictionStrategyForceDelete NodeOperationEvictionStrategy = "ForceDelete"
-	NodeOperationEvictionStrategyNone        NodeOperationEvictionStrategy = "None"
-)
+// NodeOperationSpec defines the desired state of NodeOperation.
+type NodeOperationSpec struct {
+	NodeName                  string `json:"nodeName"`
+	NodeOperationSpecTemplate `json:",inline"`
+}
 
 type NodeOperationSpecTemplate struct {
 	// EvictionStrategy defines how to evict pods before performing the node operation.
@@ -55,24 +40,22 @@ type NodeOperationSpecTemplate struct {
 	JobTemplate                  JobTemplateSpec               `json:"jobTemplate"`
 }
 
-// NodeOperationSpec defines the desired state of NodeOperation
-type NodeOperationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+type NodeOperationEvictionStrategy string
 
-	NodeName                  string `json:"nodeName"`
-	NodeOperationSpecTemplate `json:",inline"`
-}
+const (
+	NodeOperationEvictionStrategyEvict       NodeOperationEvictionStrategy = "Evict"
+	NodeOperationEvictionStrategyDelete      NodeOperationEvictionStrategy = "Delete"
+	NodeOperationEvictionStrategyForceDelete NodeOperationEvictionStrategy = "ForceDelete"
+	NodeOperationEvictionStrategyNone        NodeOperationEvictionStrategy = "None"
+)
 
 type JobTemplateSpec struct {
 	Metadata metav1.ObjectMeta `json:"metadata"`
 	Spec     batchv1.JobSpec   `json:"spec"`
 }
 
-// NodeOperationStatus defines the observed state of NodeOperation
+// NodeOperationStatus defines the observed state of NodeOperation.
 type NodeOperationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 	Phase        NodeOperationPhase     `json:"phase"`
 	Reason       string                 `json:"reason"`
 	JobNamespace string                 `json:"jobNamespace"` // Deprecated
@@ -80,15 +63,28 @@ type NodeOperationStatus struct {
 	JobReference corev1.ObjectReference `json:"jobReference,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
-//+kubebuilder:printcolumn:name="NodeName",type=string,JSONPath=`.spec.nodeName`
-//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
-//+kubebuilder:printcolumn:name="Job Namespace",type=string,JSONPath=`.status.jobReference.namespace`,priority=1
-//+kubebuilder:printcolumn:name="Job Name",type=string,JSONPath=`.status.jobReference.name`,priority=1
-//+kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+type NodeOperationPhase string
 
-// NodeOperation is the Schema for the nodeoperations API
+const (
+	NodeOperationPhasePending     NodeOperationPhase = "Pending"
+	NodeOperationPhaseDraining    NodeOperationPhase = "Draining"
+	NodeOperationPhaseDrained     NodeOperationPhase = "Drained"
+	NodeOperationPhaseJobCreating NodeOperationPhase = "JobCreating"
+	NodeOperationPhaseRunning     NodeOperationPhase = "Running"
+	NodeOperationPhaseCompleted   NodeOperationPhase = "Completed"
+	NodeOperationPhaseFailed      NodeOperationPhase = "Failed"
+)
+
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="NodeName",type=string,JSONPath=`.spec.nodeName`
+// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="JobNamespace",type=string,JSONPath=`.status.jobReference.namespace`,priority=1
+// +kubebuilder:printcolumn:name="JobName",type=string,JSONPath=`.status.jobReference.name`,priority=1
+// +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+
+// NodeOperation is the Schema for the nodeoperations API.
 type NodeOperation struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -97,13 +93,17 @@ type NodeOperation struct {
 	Status NodeOperationStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
-// NodeOperationList contains a list of NodeOperation
+// NodeOperationList contains a list of NodeOperation.
 type NodeOperationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []NodeOperation `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&NodeOperation{}, &NodeOperationList{})
 }
 
 func (o *NodeOperation) NodeRemediationName() string {
@@ -113,8 +113,4 @@ func (o *NodeOperation) NodeRemediationName() string {
 		}
 	}
 	return ""
-}
-
-func init() {
-	SchemeBuilder.Register(&NodeOperation{}, &NodeOperationList{})
 }

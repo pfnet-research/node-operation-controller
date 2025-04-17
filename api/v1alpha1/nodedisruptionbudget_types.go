@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2025.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,19 +21,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// NodeDisruptionBudgetSpec defines the desired state of NodeDisruptionBudget
+// NodeDisruptionBudgetSpec defines the desired state of NodeDisruptionBudget.
 type NodeDisruptionBudgetSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	Selector       map[string]string `json:"selector"`
 	MaxUnavailable *uint64           `json:"maxUnavailable,omitempty"`
 	MinAvailable   *uint64           `json:"minAvailable,omitempty"`
 	// TaintTargets defines taints by which nodes are determined as unavailable. Default taints added by this controller are implicitly added to TaintTargets.
 	TaintTargets []TaintTarget `json:"taintTargets,omitempty"`
+}
+
+type TaintTarget struct {
+	Key      string              `json:"key,omitempty"`
+	Operator TaintTargetOperator `json:"operator,omitempty"`
+	Value    string              `json:"value,omitempty"`
+	Effect   corev1.TaintEffect  `json:"effect,omitempty"`
 }
 
 type TaintTargetOperator string
@@ -43,25 +44,18 @@ const (
 	TaintTargetOpEqual  TaintTargetOperator = "Equal"
 )
 
-type TaintTarget struct {
-	Key      string              `json:"key,omitempty"`
-	Operator TaintTargetOperator `json:"operator,omitempty"`
-	Value    string              `json:"value,omitempty"`
-	Effect   corev1.TaintEffect  `json:"effect,omitempty"`
-}
-
-// NodeDisruptionBudgetStatus defines the observed state of NodeDisruptionBudget
+// NodeDisruptionBudgetStatus defines the observed state of NodeDisruptionBudget.
 type NodeDisruptionBudgetStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
-//+kubebuilder:printcolumn:name="MaxUnavailable",type=integer,JSONPath=`.spec.maxUnavailable`
-//+kubebuilder:printcolumn:name="MinAvailable",type=integer,JSONPath=`.spec.minAvailable`
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="MaxUnavailable",type=integer,JSONPath=`.spec.maxUnavailable`
+// +kubebuilder:printcolumn:name="MinAvailable",type=integer,JSONPath=`.spec.minAvailable`
 
-// NodeDisruptionBudget is the Schema for the nodedisruptionbudgets API
+// NodeDisruptionBudget is the Schema for the nodedisruptionbudgets API.
 type NodeDisruptionBudget struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -70,9 +64,9 @@ type NodeDisruptionBudget struct {
 	Status NodeDisruptionBudgetStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
-// NodeDisruptionBudgetList contains a list of NodeDisruptionBudget
+// NodeDisruptionBudgetList contains a list of NodeDisruptionBudget.
 type NodeDisruptionBudgetList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2025.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,21 +21,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// NodeRemediationSpec defines the desired state of NodeRemediation.
+type NodeRemediationSpec struct {
+	NodeRemediationSpecTemplate `json:",inline"`
+	NodeName                    string `json:"nodeName"`
+}
 
 type NodeRemediationSpecTemplate struct {
 	Rule                      NodeRemediationRule `json:"rule"`
 	NodeOperationTemplateName string              `json:"nodeOperationTemplateName"`
-}
-
-// NodeRemediationSpec defines the desired state of NodeRemediation
-type NodeRemediationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	NodeRemediationSpecTemplate `json:",inline"`
-	NodeName                    string `json:"nodeName"`
 }
 
 type NodeRemediationRule struct {
@@ -47,6 +41,15 @@ type NodeConditionMatcher struct {
 	Status corev1.ConditionStatus   `json:"status"`
 }
 
+// NodeRemediationStatus defines the observed state of NodeRemediation.
+type NodeRemediationStatus struct {
+	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitempty"`
+	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
+	OperationsCount int64 `json:"operationsCount"`
+	// NodeStatus represents whether Node should be remediated or not.
+	NodeStatus NodeStatus `json:"nodeStatus"`
+}
+
 type NodeStatus string
 
 const (
@@ -55,22 +58,11 @@ const (
 	NodeStatusBad     NodeStatus = "Bad"
 )
 
-// NodeRemediationStatus defines the observed state of NodeRemediation
-type NodeRemediationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	ActiveNodeOperation corev1.ObjectReference `json:"activeNodeOperation,omitempty"`
-	// OperationsCount is num of NodeOperations executed by the NodeRemediation. Once the Node is remediated, this count will be reset to 0.
-	OperationsCount int64 `json:"operationsCount"`
-	// NodeStatus represents whether Node should be remediated or not.
-	NodeStatus NodeStatus `json:"nodeStatus"`
-}
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:resource:scope=Cluster
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
-//+kubebuilder:subresource:status
-
-// NodeRemediation is the Schema for the noderemediations API
+// NodeRemediation is the Schema for the noderemediations API.
 type NodeRemediation struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -79,9 +71,9 @@ type NodeRemediation struct {
 	Status NodeRemediationStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
-// NodeRemediationList contains a list of NodeRemediation
+// NodeRemediationList contains a list of NodeRemediation.
 type NodeRemediationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

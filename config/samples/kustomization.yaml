@@ -1,0 +1,8 @@
+## Append samples of your project ##
+resources:
+- nodeops_v1alpha1_nodedisruptionbudget.yaml
+- nodeops_v1alpha1_nodeoperation.yaml
+- nodeops_v1alpha1_noderemediation.yaml
+- nodeops_v1alpha1_nodeoperationtemplate.yaml
+- nodeops_v1alpha1_noderemediationtemplate.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

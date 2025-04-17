@@ -1,5 +1,5 @@
 /*
-Copyright 2021.
+Copyright 2025.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,14 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// NodeRemediationTemplateSpec defines the desired state of NodeRemediationTemplate
+// NodeRemediationTemplateSpec defines the desired state of NodeRemediationTemplate.
 type NodeRemediationTemplateSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	NodeSelector map[string]string                   `json:"nodeSelector"`
 	Template     NodeRemediationTemplateTemplateSpec `json:"template"`
 }
@@ -37,16 +31,14 @@ type NodeRemediationTemplateTemplateSpec struct {
 	Spec     NodeRemediationSpecTemplate `json:"spec"`
 }
 
-// NodeRemediationTemplateStatus defines the observed state of NodeRemediationTemplate
+// NodeRemediationTemplateStatus defines the observed state of NodeRemediationTemplate.
 type NodeRemediationTemplateStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:resource:scope=Cluster
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
-// NodeRemediationTemplate is the Schema for the noderemediationtemplates API
+// NodeRemediationTemplate is the Schema for the noderemediationtemplates API.
 type NodeRemediationTemplate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -55,9 +47,9 @@ type NodeRemediationTemplate struct {
 	Status NodeRemediationTemplateStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
-// NodeRemediationTemplateList contains a list of NodeRemediationTemplate
+// NodeRemediationTemplateList contains a list of NodeRemediationTemplate.
 type NodeRemediationTemplateList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

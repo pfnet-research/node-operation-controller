@@ -1,6 +1,9 @@
 apiVersion: nodeops.k8s.preferred.jp/v1alpha1
 kind: NodeOperationTemplate
 metadata:
+  labels:
+    app.kubernetes.io/name: node-operation-controller
+    app.kubernetes.io/managed-by: kustomize
   name: nodeoperationtemplate-sample
 spec:
   template:

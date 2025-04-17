@@ -17,21 +17,21 @@ Node operation controller automates these steps. In addition, this controller:
 <!-- TOC -->
 
 - [Node Operation Controller](#node-operation-controller)
-    - [Table of contents](#table-of-contents)
-    - [How it works](#how-it-works)
-        - [NodeOperation and NodeDisruptionBudget](#nodeoperation-and-nodedisruptionbudget)
-        - [NodeRemediation](#noderemediation)
-    - [Custom Resources](#custom-resources)
-        - [NodeOperation](#nodeoperation)
-            - [`evictionStrategy`](#evictionstrategy)
-            - [`nodeDisruptionBudgetSelector`](#nodedisruptionbudgetselector)
-            - [`skipWaitingForEviction`](#skipwaitingforeviction)
-        - [NodeDisruptionBudget](#nodedisruptionbudget)
-            - [`maxUnavailable` and `minAvailable`](#maxunavailable-and-minavailable)
-            - [`taintTargets`](#tainttargets)
-        - [NodeRemediation](#noderemediation-1)
-        - [NodeRemediationTemplate](#noderemediationtemplate)
-    - [How to release](#how-to-release)
+  - [Table of contents](#table-of-contents)
+  - [How it works](#how-it-works)
+    - [NodeOperation and NodeDisruptionBudget](#nodeoperation-and-nodedisruptionbudget)
+    - [NodeRemediation](#noderemediation)
+  - [Custom Resources](#custom-resources)
+    - [NodeOperation](#nodeoperation)
+      - [`evictionStrategy`](#evictionstrategy)
+      - [`nodeDisruptionBudgetSelector`](#nodedisruptionbudgetselector)
+      - [`skipWaitingForEviction`](#skipwaitingforeviction)
+    - [NodeDisruptionBudget](#nodedisruptionbudget)
+      - [`maxUnavailable` and `minAvailable`](#maxunavailable-and-minavailable)
+      - [`taintTargets`](#tainttargets)
+    - [NodeRemediation](#noderemediation-1)
+    - [NodeRemediationTemplate](#noderemediationtemplate)
+  - [How to Release](#how-to-release)
 
 <!-- /TOC -->
 
@@ -59,11 +59,11 @@ Node operation controller automates these steps. In addition, this controller:
 For most operation team, they would have their own secret-sauce for daily operation. This means typical node failure can be cured by common recipe shared among the team. `NodeRemediation`, `NodeRemediationTemplate` and `NodeOperationTemplate` enable us to automate the common operation for known node issues.
 
 - `NodeOperationTemplate` represents a template of common node operation.
-- `NodeRemediation` defines 
+- `NodeRemediation` defines
   - target node to apply the remediation,
-  - known failure by Node `conditions`, and 
+  - known failure by Node `conditions`, and
   - corresponding `nodeOperationTemplate` to fix the failure.
-- `NodeRemediationTemplate` defines 
+- `NodeRemediationTemplate` defines
   - target nodes to apply the remediation by `nodeSelector` and
   - a template of `NodeRemediation`.
 
