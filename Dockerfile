@@ -1,4 +1,4 @@
-FROM golang:1.19 AS base
+FROM golang:1.23 AS base
 
 WORKDIR /workspace
 # Copy the Go Modules manifests

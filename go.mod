@@ -1,6 +1,6 @@
 module github.com/pfnet-research/node-operation-controller
 
-go 1.19
+go 1.23.8
 
 require (
 	github.com/google/go-cmp v0.5.9
