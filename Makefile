@@ -5,7 +5,7 @@ TAG := $(shell git describe --tags --always --dirty)
 IMG ?= ghcr.io/pfnet-research/node-operation-controller:$(TAG)
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.25
+ENVTEST_K8S_VERSION = 1.30
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -44,7 +44,7 @@ help: ## Display this help.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 
 CONTROLLER_GEN := $(CURDIR)/bin/controller-gen
-CONTROLLER_GEN_VERSION ?= v0.11.3
+CONTROLLER_GEN_VERSION ?= v0.16.5
 $(CONTROLLER_GEN): ## Download controller-gen locally if necessary.
 	GOBIN=$(PROJECT_DIR)/bin go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION)
 
@@ -58,13 +58,13 @@ $(ENVTEST): ## Download envtest-setup locally if necessary.
 	GOBIN=$(PROJECT_DIR)/bin go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 KUBECTL := $(CURDIR)/bin/kubectl
-KUBECTL_VERSION ?= v1.26.1
+KUBECTL_VERSION ?= v1.30.11
 $(KUBECTL): ## Download kubectl locally if necessary.
 	curl -Lo $(PROJECT_DIR)/bin/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
 	chmod +x $(PROJECT_DIR)/bin/kubectl
 
 KIND := $(CURDIR)/bin/kind
-KIND_VERSION ?= v0.17.0
+KIND_VERSION ?= v0.25.0
 $(KIND): ## Download kind locally if necessary.
 	curl -Lo $(PROJECT_DIR)/bin/kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
 	chmod +x $(PROJECT_DIR)/bin/kind
