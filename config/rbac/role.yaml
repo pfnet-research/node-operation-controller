@@ -2,25 +2,14 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: manager-role
 rules:
 - apiGroups:
   - ""
   resources:
   - events
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - nodes
+  - pods/eviction
   verbs:
   - create
   - delete
@@ -45,18 +34,6 @@ rules:
   - delete
   - get
   - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - pods/eviction
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - ""
@@ -86,109 +63,9 @@ rules:
   - nodeops.k8s.preferred.jp
   resources:
   - nodedisruptionbudgets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - nodedisruptionbudgets/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - nodedisruptionbudgets/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
   - nodeoperations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - nodeoperations/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - nodeoperations/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
   - nodeoperationtemplates
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - nodeoperationtemplates/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - nodeoperationtemplates/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
   - noderemediations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - noderemediations/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
-  - noderemediations/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - nodeops.k8s.preferred.jp
-  resources:
   - noderemediationtemplates
   verbs:
   - create
@@ -201,12 +78,20 @@ rules:
 - apiGroups:
   - nodeops.k8s.preferred.jp
   resources:
+  - nodedisruptionbudgets/finalizers
+  - nodeoperations/finalizers
+  - nodeoperationtemplates/finalizers
+  - noderemediations/finalizers
   - noderemediationtemplates/finalizers
   verbs:
   - update
 - apiGroups:
   - nodeops.k8s.preferred.jp
   resources:
+  - nodedisruptionbudgets/status
+  - nodeoperations/status
+  - nodeoperationtemplates/status
+  - noderemediations/status
   - noderemediationtemplates/status
   verbs:
   - get
